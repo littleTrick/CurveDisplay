@@ -5,7 +5,11 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    _curve_start(0),
+    _curve_end(0),
+    _range_start(0),
+    _range_end(0)
 {
     ui->setupUi(this);
     connect(ui->communication_property_menu,SIGNAL(triggered()),
@@ -16,12 +20,12 @@ MainWindow::MainWindow(QWidget *parent) :
             this,SLOT(OpenAbout()));
     connect(&curve_property_,SIGNAL(setXYAxis(double ,double ,double ,double )),
             this,SLOT(SetAxisValue(double , double ,double ,double )));
-    connect(&curve_property_,SIGNAL(setCurveItem(QStringList )),
-            this,SLOT(SetCurveItem(QStringList)));
+    connect(&curve_property_,SIGNAL(setCurveItem(QStringList,uint8_t,uint8_t,uint32_t,uint32_t)),
+            this,SLOT(SetCurveItem(QStringList,uint8_t,uint8_t,uint32_t,uint32_t)));
     connect(&curve_property_,SIGNAL(CurveColourChanged(QString,QColor)),
             this,SLOT(SetCurveColour(QString, QColor)));
     connect(ui->btn_data_collection,SIGNAL(clicked()),
-            this,SIGNAL(StartCollectData()));
+            this,SLOT(CollectData()));
     connect(&communication_property_,SIGNAL(SerialAttribChanged(QString, unsigned int)),
             this,SIGNAL(SerialAttribChanged(QString, unsigned int)));
 //    connect(&communication_property_,SIGNAL(ComChanged(QSrting)),
@@ -87,9 +91,14 @@ void MainWindow::SetAxisValue(double x_min,double x_max,double y_min,double y_ma
     myPlot_->replot();
 }
 
-void MainWindow::SetCurveItem(QStringList curve_list)
+void MainWindow::SetCurveItem(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+                              uint32_t range_start,uint32_t range_end)
 {
     curve_list_ = curve_list;
+    _curve_start = curve_start;
+    _curve_end = curve_end;
+    _range_start = range_start;
+    _range_end = range_end;
 }
 
 void MainWindow::DrawCurve(const QString &curve, const QVector<double> &data)
@@ -126,4 +135,9 @@ QwtPlotCurve *MainWindow::GetCurve(const QString &curve_name)
 void MainWindow::closeEvent(QCloseEvent *)
 {
     emit closed();
+}
+
+void MainWindow::CollectData()
+{
+    emit StartCollectData(curve_list_,_curve_start,_curve_end,_range_start,_range_end);
 }

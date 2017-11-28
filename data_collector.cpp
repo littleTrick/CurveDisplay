@@ -52,14 +52,14 @@ void DataCollector::OverseeSrialport()
         }
         else if(read_number > 0)
         {
-            //std::cout << "the number from serial is : " << read_number << std::endl;
-            //std::cout << "reading from serial: ";
+            std::cout << "the number from serial is : " << read_number << std::endl;
+            std::cout << "reading from serial: ";
             for(int i = 0; i < read_number; ++i)
             {
                 frame_data_from_server_.push_back(buff[i]);
-                //printf("%02X ",buff[i]);
+                printf("%02X ",buff[i]);
             }
-            //std::cout << std::endl;
+            std::cout << std::endl;
             memset(buff,0,sizeof(buff));
             ParseFrame();
         }
@@ -98,13 +98,13 @@ void DataCollector::ParseFrame()
             JudgeFrameType();
 
 
-            std::cout << "the number from serial is : " << (frame_current_num_ + 7) << std::endl;
-            std::cout << "reading from serial: ";
-            for(int i = 0; i < (frame_current_num_ + 7); ++i)
-            {
-                printf("%02X ",(unsigned char)frame_data_from_server_[i]);
-            }
-            std::cout << std::endl;
+//            std::cout << "the number from serial is : " << (frame_current_num_ + 7) << std::endl;
+//            std::cout << "reading from serial: ";
+//            for(int i = 0; i < (frame_current_num_ + 7); ++i)
+//            {
+//                printf("%02X ",(unsigned char)frame_data_from_server_[i]);
+//            }
+//            std::cout << std::endl;
 
 
             DeleteFrame(frame_data_from_server_.begin(),frame_data_from_server_.begin()+ frame_current_num_ + 7);

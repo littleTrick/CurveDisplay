@@ -4,6 +4,8 @@
 #include <QDialog>
 #include <QStringList>
 #include <QListWidgetItem>
+#include <map>
+#include "inttypes.h"
 
 namespace Ui {
 class CurveProperty;
@@ -30,13 +32,16 @@ public slots:
 
 signals:
     void setXYAxis(double ,double ,double ,double );
-    void setCurveItem(QStringList );
+    void setCurveItem(QStringList ,uint8_t,uint8_t,uint32_t,uint32_t);
     void CurveColourChanged(QString ,QColor );
 
+private:
+    void Init();
 private:
     Ui::CurveProperty *ui;
     QPalette palette_;
     QStringList selects_item_;
+    std::map<QString,int> _curve;
 };
 
 #endif // CURVE_PROPERTY_H

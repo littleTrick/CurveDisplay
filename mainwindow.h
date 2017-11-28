@@ -31,13 +31,16 @@ public slots:
     void OpenAbout();
 
     void SetAxisValue(double , double ,double ,double );
-    void SetCurveItem(QStringList );
+    void SetCurveItem(QStringList,uint8_t,uint8_t,uint32_t,uint32_t);
     void SetCurveColour(QString , QColor );
+
+    void CollectData();
+
 protected:
     void closeEvent(QCloseEvent *);
 
 signals:
-    void StartCollectData();
+    void StartCollectData(QStringList,uint8_t,uint8_t,uint32_t,uint32_t);
     void closed();
     void SerialAttribChanged(QString serial_name, unsigned int baud_rate);
 //    void ComChanged(QString);
@@ -62,6 +65,11 @@ private:
     QString curve_name_;
     QStringList curve_list_;
     QMap<QString, QwtPlotCurve*> curves_;
+
+    uint8_t _curve_start;
+    uint8_t _curve_end;
+    uint32_t _range_start;
+    uint32_t _range_end;
 };
 
 #endif // MAINWINDOW_H

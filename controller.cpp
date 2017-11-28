@@ -5,7 +5,8 @@
 Controller::Controller(QObject *parent) :
     QObject(parent)
 {
-    connect(&main_window_,SIGNAL(StartCollectData()),this,SLOT(StartCollectData()));
+    connect(&main_window_,SIGNAL(StartCollectData(QStringList,uint8_t,uint8_t,uint32_t,uint32_t)),
+            this,SLOT(StartCollectData(QStringList,uint8_t,uint8_t,uint32_t,uint32_t)));
     connect(&process_data_thread_,SIGNAL(DataToControllor(QVector<double>&)),
             this,SLOT(DataReadyDraw(QVector<double>&)));
     connect(&main_window_,SIGNAL(closed()),this,SLOT(OnMainWindowClosed()));
@@ -35,7 +36,8 @@ void Controller::start()
     //process_data_thread_.start();
 }
 
-void Controller::StartCollectData()
+void Controller::StartCollectData(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+                                  uint32_t range_start,uint32_t range_end)
 {
     process_data_thread_.SendFrameToServer(0XA7);//数据采集开始报文
 }

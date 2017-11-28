@@ -7,7 +7,7 @@ CommunicationProperty::CommunicationProperty(QWidget *parent) :
     ui(new Ui::CommunicationProperty)
 {
     ui->setupUi(this);
-    ui->com_name->setText(tr("/dev/ttyS1"));
+    ui->com_name->setText(tr("/dev/ttyUSB0"));
     connect(ui->btn_save,SIGNAL(clicked()),this,SLOT(TriggeredBtnSaveCfg()));
     connect(ui->btn_cancle,SIGNAL(clicked()),this,SLOT(TriggeredBtnCancelCfg()));
 }

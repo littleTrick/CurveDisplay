@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QColor>
 #include <QColorDialog>
+#include <algorithm>
 #include <iostream>
 
 using namespace std;
@@ -19,11 +20,23 @@ CurveProperty::CurveProperty(QWidget *parent) :
     connect(ui->btn_del,SIGNAL(clicked()),this,SLOT(DelCurveItem()));
     connect(ui->list_selected_item,SIGNAL(itemDoubleClicked(QListWidgetItem* )),
             this,SLOT(ChooseColour(QListWidgetItem* )));
+    Init();
 }
 
 CurveProperty::~CurveProperty()
 {
     delete ui;
+}
+
+void CurveProperty::Init()
+{
+    _curve.insert(make_pair("curve1",1));
+    _curve.insert(make_pair("curve2",2));
+    _curve.insert(make_pair("curve3",3));
+    _curve.insert(make_pair("curve4",4));
+    _curve.insert(make_pair("curve5",5));
+    _curve.insert(make_pair("curve6",6));
+
 }
 
 void CurveProperty::ChooseColour(QListWidgetItem *currentItem)
@@ -36,12 +49,31 @@ void CurveProperty::ChooseColour(QListWidgetItem *currentItem)
 void CurveProperty::ChooseBtnFinish()
 {
     int list_number = ui->list_selected_item->count();
+    QVector<int> selected_number;
     qDebug()<< list_number;
     for (int i = 0; i < list_number; ++i)
     {
-         selects_item_ << ui->list_selected_item->item(i)->text();
+        QString current_item = ui->list_selected_item->item(i)->text();
+        selects_item_ << current_item;
+         //selects_item_ << ui->list_selected_item->item(i)->text();
+        selected_number.push_back(_curve[current_item]);
     }
-    emit setCurveItem(selects_item_);
+    sort(selected_number.begin(),selected_number.end());
+    uint8_t selected_number_begin = static_cast<char> (*(selected_number.begin()));
+    uint8_t selected_number_end = static_cast<char> (*(selected_number.end()-1));
+
+    uint32_t range_begin = ui->start_range->text().toUInt();
+    uint32_t range_end = ui->end_range->text().toUInt();
+
+//    std::cout << "range_begin: "<< range_begin << "  range_end: " << range_end << std::endl;
+//    printf("a=%02X ", range_begin);
+//    printf("b=%02X\n", range_end);
+//    for(QVector<int>::Iterator it = selected_number.begin();it != selected_number.end();++it)
+//    {
+//        std::cout << *it << " ";
+//    }
+//    std::cout << std::endl;
+    emit setCurveItem(selects_item_,selected_number_begin,selected_number_end,range_begin,range_end);
 }
 
 void CurveProperty::ChooseBtnXYSet()
