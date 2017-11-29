@@ -24,7 +24,7 @@ public:
     void Stop();
     bool IsRunning() const;
 
-    void SendSetFrametoServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+    void SendSetFrameToServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
                                               uint32_t range_start,uint32_t range_end);
 public slots:
     void SetSerialAttrib(QString serial_name, unsigned int baud_rate);
@@ -35,15 +35,14 @@ signals:
 
 private:
     void ParseFrame();
-    void JudgeFrameType();
+    void Process();
     void DeleteFrame(QVector<char>::iterator begin,
                      QVector<char>::iterator end);
     void SaveData();
     void SendDataToController();
-    int  CheckSum();
     void WriteToSerial();
 
-    uint16_t CaculateCheckSumToServer(QVector<char>::iterator begin,QVector<char>::iterator end);
+    uint16_t accumulate(const char *data, size_t size);
 
 private:
     const static char ESTABLISH_CONNECTION = 0XA5;
@@ -59,6 +58,9 @@ private:
     const static char ADDR_HIGH = 0XA8;
     const static int FRAME_LENTH_MIN = 8;
     const static unsigned int kMaxRecieveLenth_ = 256;
+
+    const static int kHeadLen = 7;
+    const static int kMinFrameLen = 8;
 
     mutable QMutex lock_;
     bool running_;

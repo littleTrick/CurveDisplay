@@ -79,20 +79,24 @@ int SerialPort::Write(const char *buff, int size)
     int nwrite = 0;
     while(nwrite < size)
     {
-        int n = write(fd_,buff + nwrite,size - nwrite);
+        int n = write(fd_, buff + nwrite, size - nwrite);
+        if (n < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            break;
+        }
         nwrite += n;
     }
     return nwrite;
-    //return write(fd_,buff,size);
 }
 
 void SerialPort::Close()
 {
     if (fd_ >= 0) {
-#ifdef DEBUG
         printf("closing %s\n", name_.c_str());
-#endif
         close(fd_);
+        fd_ = -1;
     }
 }
 

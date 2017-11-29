@@ -27,7 +27,6 @@ private:
     Login login_;
     MainWindow main_window_;
     ProcessDataThread process_data_thread_;
-    
 };
 
 #endif // CONTROLLER_H

@@ -58,10 +58,9 @@ void DataCollector::OverseeSrialport()
             for(int i = 0; i < read_number; ++i)
             {
                 frame_data_from_server_.push_back(buff[i]);
-                printf("%02X ",buff[i]);
+                printf("%02X ", (unsigned char)buff[i]);
             }
             std::cout << std::endl;
-            memset(buff,0,sizeof(buff));
             ParseFrame();
         }
     }
@@ -71,49 +70,36 @@ void DataCollector::OverseeSrialport()
 
 void DataCollector::ParseFrame()
 {
-    if(frame_data_from_server_.size() < 8)
+    while (frame_data_from_server_.size() >= kMinFrameLen)
     {
-        return;
-    }
-
-    if((frame_data_from_server_[0] != ADDR_LOW) || (frame_data_from_server_[1] != ADDR_HIGH))
-    {
-        //删除当前所存的无效报文
-        //DeleteFrame(frame_data_from_server_.begin(),frame_data_from_server_.begin() + 1);
-        DeleteFrame(frame_data_from_server_.begin(),frame_data_from_server_.end());
-        return;
-    }
-
-    frame_current_num_ = ((unsigned int)frame_data_from_server_[4] << 8) + frame_data_from_server_[3];
-    if(frame_current_num_ + 7 > frame_data_from_server_.size())
-    {
-        //数据还未收完，返回继续收
-        return;
-    }
-    else
-    {
-        int sum = ((unsigned int)(unsigned char)frame_data_from_server_[frame_current_num_+6] << 8)
-                + (unsigned char)frame_data_from_server_[frame_current_num_+5];
-        if(sum == CheckSum())
+        if((frame_data_from_server_[0] != ADDR_LOW) || (frame_data_from_server_[1] != ADDR_HIGH))
         {
-            JudgeFrameType();
+            // invalid head, clear all data
+            // TODO clear until next head ?
+            // TODO log
+            frame_data_from_server_.clear();
+            break;
+        }
 
+        frame_current_num_ = (unsigned int)frame_data_from_server_[4] << 8;
+        frame_current_num_ += (unsigned char)frame_data_from_server_[3];
+        if(frame_current_num_ + kHeadLen > frame_data_from_server_.size())
+        {
+            break;
+        }
 
-//            std::cout << "the number from serial is : " << (frame_current_num_ + 7) << std::endl;
-//            std::cout << "reading from serial: ";
-//            for(int i = 0; i < (frame_current_num_ + 7); ++i)
-//            {
-//                printf("%02X ",(unsigned char)frame_data_from_server_[i]);
-//            }
-//            std::cout << std::endl;
-
-
-            DeleteFrame(frame_data_from_server_.begin(),frame_data_from_server_.begin()+ frame_current_num_ + 7);
+        uint16_t sum = (uint16_t)frame_data_from_server_[frame_current_num_+6] << 8;
+        sum +=  (unsigned char)frame_data_from_server_[frame_current_num_+5];
+        if(sum == (uint16_t)accumulate(&frame_data_from_server_[0], frame_current_num_ + 5))
+        {
+            Process();
         }
         else
         {
-            DeleteFrame(frame_data_from_server_.begin(),frame_data_from_server_.begin() + frame_current_num_ + 7);
+            // TODO log
         }
+        QVector<char>::iterator it = frame_data_from_server_.begin();
+        frame_data_from_server_.erase(it, it + frame_current_num_ + kHeadLen);
     }
 }
 
@@ -125,7 +111,7 @@ void DataCollector::DeleteFrame(QVector<char>::iterator begin,QVector<char>::ite
     frame_data_from_server_.erase(begin,end);
 }
 
-void DataCollector::JudgeFrameType()
+void DataCollector::Process()
 {
     switch(frame_data_from_server_[2])                  //功能码
     {
@@ -151,11 +137,11 @@ void DataCollector::JudgeFrameType()
         default:
             std::cerr << "this is a invalid frame, and the ID is:"
                       << frame_data_from_server_[2] << std::endl;
+            break;
     }
-
 }
 
-void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+void DataCollector::SendSetFrameToServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
                                           uint32_t range_start,uint32_t range_end)
 {
     for(int i = 0; i < curve_list.count(); ++i)
@@ -189,10 +175,9 @@ void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_st
     unsigned char *p_range_start = (unsigned char*)&range_start;
     unsigned char *p_range_end = (unsigned char*)&range_end;
 
+    size_t i = frame_data_to_server.size();
+
     frame_data_to_server_.push_back(0XA5);//0
-
-    QVector<char>::iterator begin_location = frame_data_to_server_.end() - 1;
-
     frame_data_to_server_.push_back(0XA8);
     frame_data_to_server_.push_back(0XA1);//2
     frame_data_to_server_.push_back(0X0A);
@@ -208,9 +193,8 @@ void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_st
     frame_data_to_server_.push_back(curve_start);
     frame_data_to_server_.push_back(curve_end);//14
 
-    QVector<char>::iterator end_location = frame_data_to_server_.end() - 1;
-    uint16_t sum = CaculateCheckSumToServer(begin_location,end_location);
-    printf("begin: %02X ,end: %02X \n",*begin_location,*end_location);
+    size_t size = frame_data_to_server.size();
+    uint16_t sum = accumulate(&frame_data_to_server[i], size-i);
 
     frame_data_to_server_.push_back(sum & 0X00FF);
     frame_data_to_server_.push_back((sum & 0XFF00) >> 8);//16
@@ -265,7 +249,6 @@ void DataCollector::SaveData()
     {
         data_.push_back(frame_data_from_server_[5 + i]);
     }
-
 }
 
 void DataCollector::SendDataToController()
@@ -273,22 +256,12 @@ void DataCollector::SendDataToController()
     emit DataToThread(data_);
 }
 
-int DataCollector::CheckSum()
-{
-    int sum = 0;
-    for(int i = 0; i < frame_current_num_ + 5; ++i) //5为报文头长度
-    {
-        sum += (unsigned char)frame_data_from_server_[i];
-    }
-    return sum;
-}
-
-uint16_t DataCollector::CaculateCheckSumToServer(QVector<char>::iterator begin,QVector<char>::iterator end)
+uint16_t DataCollector::accumulate(const char *data, size_t size)
 {
     uint16_t sum = 0;
-    for(QVector<char>::iterator it = begin;it != (end + 1); ++it)
+    for(int i = 0; i < size; i++) 
     {
-        sum += (unsigned char)*it;
+        sum += (unsigned char)data[i];
     }
     return sum;
 }
@@ -321,8 +294,9 @@ void DataCollector::SetSerialAttrib(QString serial_name, unsigned int baud_rate)
         baud_rate_ = B9600;
         break;
     default:
+        // this should never happen
+        assert(0);
         break;
     }
-
     emit DataProcessStart();
 }
