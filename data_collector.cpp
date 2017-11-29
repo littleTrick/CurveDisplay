@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <iostream>
 #include <cstdio>
+#include <stdio.h>
 #include "data_collector.h"
 
 DataCollector::DataCollector():
@@ -126,25 +127,23 @@ void DataCollector::DeleteFrame(QVector<char>::iterator begin,QVector<char>::ite
 
 void DataCollector::JudgeFrameType()
 {
-    //std::cout << "ID :"<< frame_data_from_server_[2] << std::endl;
-    switch(frame_data_from_server_[2])//功能码
+    switch(frame_data_from_server_[2])                  //功能码
     {
-        case ESTABLISH_CONNECTION:
-            //std::cout << __LINE__ << std::endl;
+        case ESTABLISH_CONNECTION:                      //接收到建立连接的报文
             SendFrameToServer(ESTABLISH_CONNECTION);
             break;
-        case CONFIRM_ESTABLISH_CONNECTION: //确认链接建立
-            SendFrameToServer(RESPOND_LINK);    //链路连通帧
-            //timer_->stop();
+        case END_SAMPLING:                              //接收到采样结束的报文
+            SendFrameToServer(OBTAIN_DATA);             //发送获取数据报文
             break;
-        case CONFIRM_LINK:                 //测试链路
-            SendFrameToServer(RESPOND_LINK);    //链路连通帧
+        case CONFIRM_ESTABLISH_CONNECTION:              //确认链接建立
+            SendFrameToServer(RESPOND_LINK);            //链路连通帧
             break;
-        case END_SAMPLING://采样结束
-            SendFrameToServer(OBTAIN_DATA);//发送获取数据报文
+        case SEND_DATA:                                 //收到携带数据的报文
+            SaveData();                                 //存储报文
+            SendFrameToServer(RESPOND_LINK);            //回复链路正常报文
             break;
-        case SEND_DATA:
-            SaveData();
+        case CONFIRM_LINK:                              //测试链路
+            SendFrameToServer(RESPOND_LINK);             //链路连通帧
             break;
         case STOP_DATA:
             SendDataToController();
@@ -154,6 +153,41 @@ void DataCollector::JudgeFrameType()
                       << frame_data_from_server_[2] << std::endl;
     }
 
+}
+
+void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+                                          uint32_t range_start,uint32_t range_end)
+{
+    unsigned char *p_range_start = (unsigned char*)&range_start;
+    unsigned char *p_range_end = (unsigned char*)&range_end;
+
+    frame_data_to_server_.push_back(0XA5);//0
+
+    QVector<char>::iterator begin_location = frame_data_to_server_.end() - 1;
+
+    frame_data_to_server_.push_back(0XA8);
+    frame_data_to_server_.push_back(0XA1);//2
+    frame_data_to_server_.push_back(0X0A);
+    frame_data_to_server_.push_back(0X00);//4
+    frame_data_to_server_.push_back(*(p_range_start));
+    frame_data_to_server_.push_back(*(p_range_start +1));//6
+    frame_data_to_server_.push_back(*(p_range_start +2));
+    frame_data_to_server_.push_back(*(p_range_start +3));//8
+    frame_data_to_server_.push_back(*(p_range_end));
+    frame_data_to_server_.push_back(*(p_range_end +1));//10
+    frame_data_to_server_.push_back(*(p_range_end +2));
+    frame_data_to_server_.push_back(*(p_range_end +3));//12
+    frame_data_to_server_.push_back(curve_start);
+    frame_data_to_server_.push_back(curve_end);//14
+
+    QVector<char>::iterator end_location = frame_data_to_server_.end() - 1;
+    uint16_t sum = CaculateCheckSumToServer(begin_location,end_location);
+    printf("begin: %02X ,end: %02X \n",*begin_location,*end_location);
+
+    frame_data_to_server_.push_back(sum & 0X00FF);
+    frame_data_to_server_.push_back((sum & 0XFF00) >> 8);//16
+
+    WriteToSerial();
 }
 
 void DataCollector::SendFrameToServer(const char id)
@@ -188,7 +222,7 @@ void DataCollector::WriteToSerial()
         std::cout << "writing to serial: ";
         for(int i = 0; i < nwrite; ++i)
         {
-             printf("%02X",(unsigned char)frame_data_to_server_[i]);
+             printf("%02X ",(unsigned char)frame_data_to_server_[i]);
         }
         std::cout << std::endl;
 
@@ -217,6 +251,16 @@ int DataCollector::CheckSum()
     for(int i = 0; i < frame_current_num_ + 5; ++i) //5为报文头长度
     {
         sum += (unsigned char)frame_data_from_server_[i];
+    }
+    return sum;
+}
+
+uint16_t DataCollector::CaculateCheckSumToServer(QVector<char>::iterator begin,QVector<char>::iterator end)
+{
+    uint16_t sum = 0;
+    for(QVector<char>::iterator it = begin;it != (end + 1); ++it)
+    {
+        sum += (unsigned char)*it;
     }
     return sum;
 }

@@ -12,7 +12,7 @@ class ProcessDataThread:public QThread
 public:
     ProcessDataThread();
     virtual void run();
-    void SendFrameToServer(const char );
+    void SendFrameToServer(QStringList,uint8_t,uint8_t,uint32_t,uint32_t);
     void Stop();
 
 signals:

@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QTimer>
 #include <QMutex>
+#include <QStringList>
+#include "inttypes.h"
 #include "serialport.h"
 
 class DataCollector: public QObject
@@ -21,6 +23,9 @@ public:
     void OverseeSrialport();
     void Stop();
     bool IsRunning() const;
+
+    void SendSetFrametoServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+                                              uint32_t range_start,uint32_t range_end);
 public slots:
     void SetSerialAttrib(QString serial_name, unsigned int baud_rate);
 
@@ -37,6 +42,8 @@ private:
     void SendDataToController();
     int  CheckSum();
     void WriteToSerial();
+
+    uint16_t CaculateCheckSumToServer(QVector<char>::iterator begin,QVector<char>::iterator end);
 
 private:
     const static char ESTABLISH_CONNECTION = 0XA5;

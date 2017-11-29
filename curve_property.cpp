@@ -49,18 +49,17 @@ void CurveProperty::ChooseColour(QListWidgetItem *currentItem)
 void CurveProperty::ChooseBtnFinish()
 {
     int list_number = ui->list_selected_item->count();
-    QVector<int> selected_number;
-    qDebug()<< list_number;
+    qDebug()<< "the number of list which is chosen by user is :" << list_number;
     for (int i = 0; i < list_number; ++i)
     {
         QString current_item = ui->list_selected_item->item(i)->text();
         selects_item_ << current_item;
          //selects_item_ << ui->list_selected_item->item(i)->text();
-        selected_number.push_back(_curve[current_item]);
+        _selected_number.push_back(_curve[current_item]);
     }
-    sort(selected_number.begin(),selected_number.end());
-    uint8_t selected_number_begin = static_cast<char> (*(selected_number.begin()));
-    uint8_t selected_number_end = static_cast<char> (*(selected_number.end()-1));
+    sort(_selected_number.begin(),_selected_number.end());
+    uint8_t selected_number_begin = static_cast<char> (*(_selected_number.begin()));
+    uint8_t selected_number_end = static_cast<char> (*(_selected_number.end()-1));
 
     uint32_t range_begin = ui->start_range->text().toUInt();
     uint32_t range_end = ui->end_range->text().toUInt();

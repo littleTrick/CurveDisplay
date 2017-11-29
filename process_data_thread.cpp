@@ -26,9 +26,10 @@ void ProcessDataThread::DataToDraw(QVector<double> &data)
     emit DataToControllor(data);
 }
 
-void ProcessDataThread::SendFrameToServer(const char id)
+void ProcessDataThread::SendFrameToServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
+                                          uint32_t range_start,uint32_t range_end)
 {
-    data_collector_.SendFrameToServer(id);
+    data_collector_.SendSetFrametoServer(curve_list,curve_start,curve_end,range_start,range_end);
 }
 
 void ProcessDataThread::Stop()

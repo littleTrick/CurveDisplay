@@ -39,7 +39,8 @@ void Controller::start()
 void Controller::StartCollectData(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
                                   uint32_t range_start,uint32_t range_end)
 {
-    process_data_thread_.SendFrameToServer(0XA7);//数据采集开始报文
+    //process_data_thread_.SendFrameToServer(0XA7);//数据采集开始报文
+    process_data_thread_.SendFrameToServer(curve_list,curve_start,curve_end,range_start,range_end);
 }
 
 void Controller::DataReadyDraw(QVector<double> &data)

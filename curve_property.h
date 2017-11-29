@@ -42,6 +42,7 @@ private:
     QPalette palette_;
     QStringList selects_item_;
     std::map<QString,int> _curve;
+    QVector<int> _selected_number;
 };
 
 #endif // CURVE_PROPERTY_H
