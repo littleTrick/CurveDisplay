@@ -103,14 +103,6 @@ void DataCollector::ParseFrame()
     }
 }
 
-
-
-void DataCollector::DeleteFrame(QVector<char>::iterator begin,QVector<char>::iterator end)
-{
-    //删除vector中所有报文
-    frame_data_from_server_.erase(begin,end);
-}
-
 void DataCollector::Process()
 {
     switch(frame_data_from_server_[2])                  //功能码
@@ -238,7 +230,6 @@ void DataCollector::WriteToSerial()
         }
         std::cout << std::endl;
 
-        //DeleteFrame(frame_data_to_server_.begin(),frame_data_to_server_.begin() + nwrite);
         frame_data_to_server_.erase(frame_data_to_server_.begin(),frame_data_to_server_.begin() + nwrite);
     }
 }

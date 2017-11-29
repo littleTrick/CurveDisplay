@@ -36,8 +36,6 @@ signals:
 private:
     void ParseFrame();
     void Process();
-    void DeleteFrame(QVector<char>::iterator begin,
-                     QVector<char>::iterator end);
     void SaveData();
     void SendDataToController();
     void WriteToSerial();
