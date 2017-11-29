@@ -158,6 +158,34 @@ void DataCollector::JudgeFrameType()
 void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,
                                           uint32_t range_start,uint32_t range_end)
 {
+    for(int i = 0; i < curve_list.count(); ++i)
+    {
+        if(curve_list.at(i) == "curve1")
+        {
+            _curve_chosen_map[1] = "curve1";
+        }
+        else if(curve_list.at(i) == "curve2")
+        {
+            _curve_chosen_map[2] = "curve2";
+        }
+        else if(curve_list.at(i) == "curve3")
+        {
+            _curve_chosen_map[3] = "curve3";
+        }
+        else if(curve_list.at(i) == "curve4")
+        {
+            _curve_chosen_map[4] = "curve4";
+        }
+        else if(curve_list.at(i) == "curve5")
+        {
+            _curve_chosen_map[5] = "curve5";
+        }
+        else if(curve_list.at(i) == "curve6")
+        {
+            _curve_chosen_map[6] = "curve6";
+        }
+    }
+
     unsigned char *p_range_start = (unsigned char*)&range_start;
     unsigned char *p_range_end = (unsigned char*)&range_end;
 

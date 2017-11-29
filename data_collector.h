@@ -3,8 +3,8 @@
 
 #include <QVector>
 #include <QObject>
-#include <QTimer>
 #include <QMutex>
+#include <map>
 #include <QStringList>
 #include "inttypes.h"
 #include "serialport.h"
@@ -68,6 +68,7 @@ private:
     int frame_current_num_;
     QVector<char> frame_data_from_server_;
     QVector<char> frame_data_to_server_;
+    std::map<int,QString> _curve_chosen_map;
     QVector<double> data_;
 };
 
