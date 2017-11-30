@@ -16,14 +16,12 @@ public:
     void Stop();
 
 signals:
-    void DataToControllor(QVector<double>&);
+    void DataToControllor(const QString &,const QVector<double>&);
     void SerialAttribChanged(QString serial_name, unsigned int baud_rate);
     void DataProcessStart();
 
 private slots:
-    void DataToDraw(QVector<double>&);
-//    void SetComName(QString);
-//    void SetBaudRate(unsigned int);
+    void DataToDraw(const QString ,const QVector<double>);
 
 private:
     DataCollector data_collector_;

@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <qwt_legend.h>
 #include <QMessageBox>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -101,8 +102,14 @@ void MainWindow::SetCurveItem(QStringList curve_list,uint8_t curve_start,uint8_t
     _range_end = range_end;
 }
 
-void MainWindow::DrawCurve(const QString &curve, const QVector<double> &data)
+void MainWindow::DrawCurve(const QString curve, const QVector<double> data)
 {
+    std::cout << "data which i have collect is: " << data.size() << std::endl;
+    for(QVector<double>::const_iterator it = data.begin();it != data.end();++it)
+    {
+        std::cout << *it << " " << std::endl;
+    }
+    std::cout << std::endl;
     if(curve_list_.contains(curve))
     {
         QVector<double> x;

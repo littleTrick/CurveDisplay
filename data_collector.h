@@ -30,7 +30,7 @@ public slots:
     void SetSerialAttrib(QString serial_name, unsigned int baud_rate);
 
 signals:
-    void DataToThread(QVector<double> &);
+    void DataToThread(const QString,const QVector<double>);
     void DataProcessStart();
 
 private:
@@ -40,10 +40,10 @@ private:
                      QVector<char>::iterator end);
     void SaveData();
     void SendDataToController();
-    int  CheckSum();
+    uint16_t  CheckSum();
     void WriteToSerial();
 
-    uint16_t CaculateCheckSumToServer(QVector<char>::iterator begin,QVector<char>::iterator end);
+    uint16_t CaculateCheckSumToServer(unsigned int begin,unsigned int end);
 
 private:
     const static char ESTABLISH_CONNECTION = 0XA5;
@@ -69,7 +69,16 @@ private:
     QVector<char> frame_data_from_server_;
     QVector<char> frame_data_to_server_;
     std::map<int,QString> _curve_chosen_map;
+    std::map<QString,QVector<char> > _curve__data_map;
+    uint32_t _range_start;
+
     QVector<double> data_;
+    QVector<char> _data_curve1;
+    QVector<char> _data_curve2;
+    QVector<char> _data_curve3;
+    QVector<char> _data_curve4;
+    QVector<char> _data_curve5;
+    QVector<char> _data_curve6;
 };
 
 #endif // DATA_COLLECTOR_H

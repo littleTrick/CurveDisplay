@@ -6,7 +6,6 @@
 
 DataCollector::DataCollector():
     running_(true),
-    //serial_port_("/dev/ttyUSB0"),
     frame_current_num_(0)
 {
 }
@@ -48,7 +47,7 @@ void DataCollector::OverseeSrialport()
         else if(read_number == 0)
         {
 #ifndef NDEBUG
-            std::cerr << "read timeout" << std::endl;
+            //std::cerr << "read timeout" << std::endl;
 #endif
         }
         else if(read_number > 0)
@@ -57,8 +56,9 @@ void DataCollector::OverseeSrialport()
             std::cout << "reading from serial: ";
             for(int i = 0; i < read_number; ++i)
             {
-                frame_data_from_server_.push_back(buff[i]);
-                printf("%02X ",buff[i]);
+                unsigned char c = (unsigned char)buff[i];
+                frame_data_from_server_.push_back(c);
+                printf("%02X ",(unsigned char)buff[i]);
             }
             std::cout << std::endl;
             memset(buff,0,sizeof(buff));
@@ -84,7 +84,8 @@ void DataCollector::ParseFrame()
         return;
     }
 
-    frame_current_num_ = ((unsigned int)frame_data_from_server_[4] << 8) + frame_data_from_server_[3];
+    frame_current_num_ = ((unsigned int)frame_data_from_server_[4] << 8) + (unsigned char)frame_data_from_server_[3];
+    std::cout << "frame_current_num_ : " << frame_current_num_ << std::endl;
     if(frame_current_num_ + 7 > frame_data_from_server_.size())
     {
         //数据还未收完，返回继续收
@@ -92,12 +93,11 @@ void DataCollector::ParseFrame()
     }
     else
     {
-        int sum = ((unsigned int)(unsigned char)frame_data_from_server_[frame_current_num_+6] << 8)
+        uint16_t sum = ((unsigned int)(unsigned char)frame_data_from_server_[frame_current_num_+6] << 8)
                 + (unsigned char)frame_data_from_server_[frame_current_num_+5];
         if(sum == CheckSum())
         {
             JudgeFrameType();
-
 
 //            std::cout << "the number from serial is : " << (frame_current_num_ + 7) << std::endl;
 //            std::cout << "reading from serial: ";
@@ -109,6 +109,7 @@ void DataCollector::ParseFrame()
 
 
             DeleteFrame(frame_data_from_server_.begin(),frame_data_from_server_.begin()+ frame_current_num_ + 7);
+            std::cout << "the count of frame_data_server is :" << frame_data_from_server_.size() << std::endl;
         }
         else
         {
@@ -146,6 +147,7 @@ void DataCollector::JudgeFrameType()
             SendFrameToServer(RESPOND_LINK);             //链路连通帧
             break;
         case STOP_DATA:
+            SendFrameToServer(RESPOND_LINK);
             SendDataToController();
             break;
         default:
@@ -163,36 +165,41 @@ void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_st
         if(curve_list.at(i) == "curve1")
         {
             _curve_chosen_map[1] = "curve1";
+            _curve__data_map["curve1"] = _data_curve1;
         }
         else if(curve_list.at(i) == "curve2")
         {
             _curve_chosen_map[2] = "curve2";
+            _curve__data_map["curve2"] = _data_curve2;
         }
         else if(curve_list.at(i) == "curve3")
         {
             _curve_chosen_map[3] = "curve3";
+            _curve__data_map["curve3"] = _data_curve3;
         }
         else if(curve_list.at(i) == "curve4")
         {
             _curve_chosen_map[4] = "curve4";
+            _curve__data_map["curve4"] = _data_curve4;
         }
         else if(curve_list.at(i) == "curve5")
         {
             _curve_chosen_map[5] = "curve5";
+            _curve__data_map["curve5"] = _data_curve5;
         }
         else if(curve_list.at(i) == "curve6")
         {
             _curve_chosen_map[6] = "curve6";
+            _curve__data_map["curve6"] = _data_curve6;
         }
     }
 
+    _range_start = range_start;
     unsigned char *p_range_start = (unsigned char*)&range_start;
     unsigned char *p_range_end = (unsigned char*)&range_end;
 
+    unsigned int  begin_location = frame_data_to_server_.size();
     frame_data_to_server_.push_back(0XA5);//0
-
-    QVector<char>::iterator begin_location = frame_data_to_server_.end() - 1;
-
     frame_data_to_server_.push_back(0XA8);
     frame_data_to_server_.push_back(0XA1);//2
     frame_data_to_server_.push_back(0X0A);
@@ -208,9 +215,9 @@ void DataCollector::SendSetFrametoServer(QStringList curve_list,uint8_t curve_st
     frame_data_to_server_.push_back(curve_start);
     frame_data_to_server_.push_back(curve_end);//14
 
-    QVector<char>::iterator end_location = frame_data_to_server_.end() - 1;
+    unsigned int end_location = frame_data_to_server_.size();
     uint16_t sum = CaculateCheckSumToServer(begin_location,end_location);
-    printf("begin: %02X ,end: %02X \n",*begin_location,*end_location);
+    printf("begin: %02X ,end: %02X \n",begin_location,end_location);
 
     frame_data_to_server_.push_back(sum & 0X00FF);
     frame_data_to_server_.push_back((sum & 0XFF00) >> 8);//16
@@ -261,21 +268,60 @@ void DataCollector::WriteToSerial()
 
 void DataCollector::SaveData()
 {
-    for(int i = 0; i < frame_current_num_; ++i)
+    unsigned char current_curve_id = frame_data_from_server_[5];//该条报文曲线编号 输出1
+    std::map<int,QString>::iterator iter_curve = _curve_chosen_map.find(current_curve_id);//查找该曲线编号会否被选择
+    if(iter_curve != _curve_chosen_map.end())
     {
-        data_.push_back(frame_data_from_server_[5 + i]);
+        QString current_curve_name = iter_curve->second;
+        uint32_t data_offset = ((uint32_t)frame_data_from_server_[9] << 24) + ((uint32_t)frame_data_from_server_[8] << 16)
+                                 + ((uint16_t)frame_data_from_server_[7] << 8) + ((uint8_t)frame_data_from_server_[6]); //数据偏移量
+        std::map<QString,QVector<char> >::iterator iter_data = _curve__data_map.find(current_curve_name);//该曲线对应的数据缓存
+        if((data_offset - _range_start) != iter_data->second.size())
+        {
+            return;                                             //数据发生重叠或者缺省
+        }
+        else
+        {
+            for(int i = 0; i < frame_current_num_ - 5; ++i)
+            {
+                iter_data->second.push_back(frame_data_from_server_[10 + i]);//10为数据位开始坐标
+            }
+        }
     }
-
+    else
+    {
+        return;
+    }
 }
 
 void DataCollector::SendDataToController()
 {
-    emit DataToThread(data_);
+    unsigned char current_curve_id = frame_data_from_server_[5];//该条报文曲线编号
+    std::map<int,QString>::iterator iter_curve = _curve_chosen_map.find(current_curve_id);//查找该曲线编号会否被选择
+    if(iter_curve != _curve_chosen_map.end())
+    {
+        QString current_curve_name = iter_curve->second;  //该条曲线名
+        std::map<QString,QVector<char> >::iterator iter_data = _curve__data_map.find(current_curve_name);
+        for(int i = 0; i < (iter_data->second).size(); i = i + 4)
+        {
+            float d=*(float*)&((iter_data->second)[i]);
+            data_.push_back(d);
+        }
+
+        std::cout << "data which is in collector : " << data_.size() << std::endl;
+        for(QVector<double>::const_iterator it = data_.begin();it != data_.end();++it)
+        {
+            std::cout << *it << " " << std::endl;
+        }
+        std::cout << std::endl;
+
+        emit DataToThread(current_curve_name,data_);
+    }
 }
 
-int DataCollector::CheckSum()
+uint16_t DataCollector::CheckSum()
 {
-    int sum = 0;
+    uint16_t sum = 0;
     for(int i = 0; i < frame_current_num_ + 5; ++i) //5为报文头长度
     {
         sum += (unsigned char)frame_data_from_server_[i];
@@ -283,12 +329,12 @@ int DataCollector::CheckSum()
     return sum;
 }
 
-uint16_t DataCollector::CaculateCheckSumToServer(QVector<char>::iterator begin,QVector<char>::iterator end)
+uint16_t DataCollector::CaculateCheckSumToServer(unsigned int begin,unsigned int end)
 {
     uint16_t sum = 0;
-    for(QVector<char>::iterator it = begin;it != (end + 1); ++it)
+    for(int i = begin; i < end; ++i)
     {
-        sum += (unsigned char)*it;
+        sum += (unsigned char)frame_data_to_server_[i];
     }
     return sum;
 }

@@ -19,7 +19,7 @@ signals:
     
 private slots:
     void StartCollectData(QStringList,uint8_t,uint8_t,uint32_t,uint32_t);
-    void DataReadyDraw(QVector<double> &);
+    void DataReadyDraw(const QString ,const QVector<double>);
     void OnMainWindowClosed();
     void ProcessStart();
 

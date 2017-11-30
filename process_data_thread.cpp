@@ -3,8 +3,8 @@
 
 ProcessDataThread::ProcessDataThread()
 {
-    connect(&data_collector_,SIGNAL(DataToThread(QVector<double>&)),
-            this,SLOT(DataToDraw(QVector<double>&)));
+    connect(&data_collector_,SIGNAL(DataToThread(const QString,const QVector<double>)),
+            this,SLOT(DataToDraw(const QString,const QVector<double>)));
     connect(this,SIGNAL(SerialAttribChanged(QString, unsigned int)),
             &data_collector_,SLOT(SetSerialAttrib(QString, unsigned int)));
     connect(&data_collector_,SIGNAL(DataProcessStart()),this,SIGNAL(DataProcessStart()));
@@ -21,9 +21,9 @@ void ProcessDataThread::run()
     data_collector_.OverseeSrialport();
 }
 
-void ProcessDataThread::DataToDraw(QVector<double> &data)
+void ProcessDataThread::DataToDraw(const QString curve_name,const QVector<double> data)
 {
-    emit DataToControllor(data);
+    emit DataToControllor(curve_name,data);
 }
 
 void ProcessDataThread::SendFrameToServer(QStringList curve_list,uint8_t curve_start,uint8_t curve_end,

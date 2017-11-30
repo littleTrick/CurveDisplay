@@ -7,8 +7,8 @@ Controller::Controller(QObject *parent) :
 {
     connect(&main_window_,SIGNAL(StartCollectData(QStringList,uint8_t,uint8_t,uint32_t,uint32_t)),
             this,SLOT(StartCollectData(QStringList,uint8_t,uint8_t,uint32_t,uint32_t)));
-    connect(&process_data_thread_,SIGNAL(DataToControllor(QVector<double>&)),
-            this,SLOT(DataReadyDraw(QVector<double>&)));
+    connect(&process_data_thread_,SIGNAL(DataToControllor(const QString &,const QVector<double>)),
+            this,SLOT(DataReadyDraw(const QString &,const QVector<double>)));
     connect(&main_window_,SIGNAL(closed()),this,SLOT(OnMainWindowClosed()));
     connect(&main_window_,SIGNAL(SerialAttribChanged(QString, unsigned int)),
             &process_data_thread_,SIGNAL(SerialAttribChanged(QString, unsigned int)));
@@ -43,9 +43,9 @@ void Controller::StartCollectData(QStringList curve_list,uint8_t curve_start,uin
     process_data_thread_.SendFrameToServer(curve_list,curve_start,curve_end,range_start,range_end);
 }
 
-void Controller::DataReadyDraw(QVector<double> &data)
+void Controller::DataReadyDraw(const QString curve_name,const QVector<double> data)
 {
-    main_window_.DrawCurve("curve1",data);
+    main_window_.DrawCurve(curve_name,data);
 }
 
 void Controller::OnMainWindowClosed()

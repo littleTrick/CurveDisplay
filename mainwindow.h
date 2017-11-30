@@ -23,7 +23,7 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void InitCurve();
-    void DrawCurve(const QString &curve, const QVector<double> &data);
+    void DrawCurve(const QString curve, const QVector<double> data);
 
 public slots:
     void OpenCommunicationCfg();
