@@ -22,6 +22,8 @@ public:
     {
         return palette_;
     }
+    uint32_t GetRangeBegin();
+    uint32_t GetRangeEnd();
 
 public slots:
     void ChooseColour(QListWidgetItem *);
@@ -43,6 +45,8 @@ private:
     QStringList selects_item_;
     std::map<QString,int> _curve;
     QVector<int> _selected_number;
+    uint32_t _range_begin;
+    uint32_t _range_end;
 };
 
 #endif // CURVE_PROPERTY_H

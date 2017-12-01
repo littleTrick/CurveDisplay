@@ -104,7 +104,7 @@ void MainWindow::SetCurveItem(QStringList curve_list,uint8_t curve_start,uint8_t
 
 void MainWindow::DrawCurve(const QString curve, const QVector<double> data)
 {
-    std::cout << "data which i have collect is: " << data.size() << std::endl;
+    std::cout << "data which is in mainwindow: " << data.size() << std::endl;
     for(QVector<double>::const_iterator it = data.begin();it != data.end();++it)
     {
         std::cout << *it << " " << std::endl;
@@ -113,10 +113,26 @@ void MainWindow::DrawCurve(const QString curve, const QVector<double> data)
     if(curve_list_.contains(curve))
     {
         QVector<double> x;
-        for(int i= 0; i < data.size(); ++i)
+        double x_min = curve_property_.GetRangeBegin();
+        double x_max = curve_property_.GetRangeEnd();
+
+        const double *y_max = std::max_element(&data[0], &data[0]+data.size());
+        const double *y_min = std::min_element(&data[0], &data[0]+data.size());
+        if((*y_max - *y_min) < EPSINON)
+        {
+           myPlot_->setAxisScale(QwtPlot::yLeft,0,*y_max,*y_max/10);
+        }
+        else
+        {
+           myPlot_->setAxisScale(QwtPlot::yLeft,*y_min,*y_max,(*y_max - *y_min)/10);
+        }
+
+        for(double i = x_min; i <= x_max; ++i)
         {
             x.push_back(i);
         }
+
+        myPlot_->setAxisScale(QwtPlot::xBottom, x_min,x_max,(x_max - x_min)/10);
         GetCurve(curve)->setSamples(x,data);
         myPlot_->replot();
     }
@@ -132,7 +148,7 @@ QwtPlotCurve *MainWindow::GetCurve(const QString &curve_name)
     if (!curves_.contains(curve_name))  {
         curves_[curve_name] = new QwtPlotCurve(curve_name);
         curves_[curve_name]->setTitle(curve_name);
-        curves_[curve_name]->setPen(Qt::red,1);
+        // curves_[curve_name]->setPen(Qt::red,1);
         curves_[curve_name]->attach(myPlot_);
         myPlot_->insertLegend(new QwtLegend(),QwtPlot::RightLegend);
     }

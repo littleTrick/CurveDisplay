@@ -32,7 +32,7 @@
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
-     <string>Tab 1</string>
+     <string>数据采集选项</string>
     </attribute>
     <widget class="QFrame" name="frame">
      <property name="geometry">
@@ -238,7 +238,7 @@
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>Tab 2</string>
+     <string>坐标轴范围选项</string>
     </attribute>
     <widget class="QLabel" name="label">
      <property name="geometry">
@@ -310,6 +310,9 @@
         <pointsize>12</pointsize>
        </font>
       </property>
+      <property name="maximum">
+       <double>10000.000000000000000</double>
+      </property>
      </widget>
      <widget class="QDoubleSpinBox" name="x_max">
       <property name="geometry">
@@ -324,6 +327,9 @@
        <font>
         <pointsize>12</pointsize>
        </font>
+      </property>
+      <property name="maximum">
+       <double>1000000.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_6">
@@ -397,6 +403,9 @@
         <pointsize>12</pointsize>
        </font>
       </property>
+      <property name="maximum">
+       <double>10000.000000000000000</double>
+      </property>
      </widget>
      <widget class="QDoubleSpinBox" name="y_max">
       <property name="geometry">
@@ -411,6 +420,9 @@
        <font>
         <pointsize>12</pointsize>
        </font>
+      </property>
+      <property name="maximum">
+       <double>1000000.000000000000000</double>
       </property>
      </widget>
      <widget class="QLabel" name="label_7">

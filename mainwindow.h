@@ -50,6 +50,7 @@ private:
     QwtPlotCurve *GetCurve(const QString &curve_name);
 
 private:
+    const static float EPSINON = 0.001;
     const static int kMaxGroup = 48;
     Ui::MainWindow *ui;
     CommunicationProperty communication_property_;

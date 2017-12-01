@@ -47,19 +47,19 @@
      <x>0</x>
      <y>0</y>
      <width>765</width>
-     <height>31</height>
+     <height>35</height>
     </rect>
    </property>
    <widget class="QMenu" name="configuration">
     <property name="title">
-     <string>configuration</string>
+     <string>配置</string>
     </property>
     <addaction name="communication_property_menu"/>
     <addaction name="curve_property_menu"/>
    </widget>
    <widget class="QMenu" name="about">
     <property name="title">
-     <string>about</string>
+     <string>关于</string>
     </property>
     <addaction name="about_software"/>
    </widget>
@@ -82,17 +82,23 @@
   </action>
   <action name="communication_property_menu">
    <property name="text">
-    <string>communication property</string>
+    <string>通信设置</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
+   <property name="priority">
+    <enum>QAction::NormalPriority</enum>
    </property>
   </action>
   <action name="curve_property_menu">
    <property name="text">
-    <string>curve property</string>
+    <string>数据采集设置</string>
    </property>
   </action>
   <action name="about_software">
    <property name="text">
-    <string>about software</string>
+    <string>关于</string>
    </property>
   </action>
  </widget>

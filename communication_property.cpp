@@ -24,9 +24,10 @@ void CommunicationProperty::TriggeredBtnSaveCfg()
     unsigned int baud_rate = baud_rate_string.toUInt();
 
     emit SerialAttribChanged(serial_name, baud_rate);
+    this->close();
 }
 
 void CommunicationProperty::TriggeredBtnCancelCfg()
 {
-    //add cancel configuration
+    this->close();
 }

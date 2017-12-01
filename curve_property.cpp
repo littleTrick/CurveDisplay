@@ -61,8 +61,8 @@ void CurveProperty::ChooseBtnFinish()
     uint8_t selected_number_begin = static_cast<char> (*(_selected_number.begin()));
     uint8_t selected_number_end = static_cast<char> (*(_selected_number.end()-1));
 
-    uint32_t range_begin = ui->start_range->text().toUInt();
-    uint32_t range_end = ui->end_range->text().toUInt();
+    _range_begin = ui->start_range->text().toUInt();
+    _range_end = ui->end_range->text().toUInt();
 
 //    std::cout << "range_begin: "<< range_begin << "  range_end: " << range_end << std::endl;
 //    printf("a=%02X ", range_begin);
@@ -72,7 +72,7 @@ void CurveProperty::ChooseBtnFinish()
 //        std::cout << *it << " ";
 //    }
 //    std::cout << std::endl;
-    emit setCurveItem(selects_item_,selected_number_begin,selected_number_end,range_begin,range_end);
+    emit setCurveItem(selects_item_,selected_number_begin,selected_number_end,_range_begin,_range_end);
 }
 
 void CurveProperty::ChooseBtnXYSet()
@@ -98,4 +98,14 @@ void CurveProperty::DelCurveItem()
        QListWidgetItem *item = ui->list_selected_item->takeItem(row);
        ui->list_unselected_item->addItem(item);
     }
+}
+
+uint32_t CurveProperty::GetRangeBegin()
+{
+    return _range_begin;
+}
+
+uint32_t CurveProperty::GetRangeEnd()
+{
+    return _range_end;
 }
